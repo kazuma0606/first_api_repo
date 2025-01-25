@@ -23,13 +23,19 @@ def get_csrf_token(csrf_protect: CsrfProtect = Depends()):
             
 @router.post("/api/register", response_model=UserInfo)
 async def signup(request: Request, user: UserBody, csrf_protect: CsrfProtect = Depends()):
-    csrf_token = csrf_protect.get_csrf_from_headers(request.headers)
-    csrf_protect.validate_csrf(csrf_token)
-    user = jsonable_encoder(user)
-    res = await db_signup(user)
-    if res:
-        return res
-    raise HTTPException(status_code=400, detail="Failed to register user")
+    try:
+        csrf_token = csrf_protect.get_csrf_from_headers(request.headers)
+        print("Received CSRF token:", csrf_token)  # デバッグ用
+        csrf_protect.validate_csrf(csrf_token)
+        print("CSRF validation passed")  # デバッグ用
+        user = jsonable_encoder(user)
+        res = await db_signup(user)
+        if res:
+            return res
+        raise HTTPException(status_code=400, detail="Failed to register user")
+    except Exception as e:
+        print("Error:", str(e))  # デバッグ用
+        raise
 
 @router.post("/api/login", response_model=SuccessMsg)
 async def login(request: Request, response: Response, user: UserBody, csrf_protect: CsrfProtect = Depends()):
