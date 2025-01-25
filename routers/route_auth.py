@@ -13,7 +13,13 @@ auth = AuthJwtCsrf()
 
 @router.get("/api/csrftoken", response_model=Csrf)
 def get_csrf_token(csrf_protect: CsrfProtect = Depends()):
-    return {"csrf_token": csrf_protect.generate_csrf()}
+    try:
+        token = csrf_protect.generate_csrf()
+        print("Generated token:", token)
+        return {"csrf_token": token}
+    except Exception as e:
+        print("Error generating token:", str(e))
+        raise
             
 @router.post("/api/register", response_model=UserInfo)
 async def signup(request: Request, user: UserBody, csrf_protect: CsrfProtect = Depends()):
